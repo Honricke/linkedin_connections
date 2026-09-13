@@ -118,12 +118,16 @@ O bot pode ser agendado para rodar todo dia sem depender de cron. Diferente do c
 
 Como isso não é usado em notebook e desktop ao mesmo tempo (as duas máquinas rodam de forma independente, sem sincronizar entre si), o script `linkedin_conn.sh` guarda localmente a data da última execução (`~/.local/state/linkedin-connections/last_run_date`) e recusa rodar de novo no mesmo dia naquela máquina — evita tanto um "catch-up" duplicado do systemd quanto qualquer disparo repetido no mesmo dia.
 
-Arquivos de unit em `systemd/` (versionados, usam `%h` para o home do usuário — funcionam em qualquer máquina onde o repositório esteja em `~/documents/my-projects/linkedin_connections`):
+Arquivos de unit em `systemd/` (versionados). O `linkedin-connections.service` usa o placeholder `__REPO_DIR__` no lugar do caminho do repositório, então funciona em qualquer máquina/usuário independente de onde o repositório foi clonado — a instalação abaixo substitui o placeholder pelo diretório atual:
 
 ```bash
+cd /caminho/onde/voce/clonou/linkedin_connections   # rode a partir da raiz do repositorio
+REPO_DIR="$(pwd)"
+
 mkdir -p ~/.config/systemd/user
-ln -sf ~/documents/my-projects/linkedin_connections/systemd/linkedin-connections.service ~/.config/systemd/user/
-ln -sf ~/documents/my-projects/linkedin_connections/systemd/linkedin-connections.timer ~/.config/systemd/user/
+sed "s#__REPO_DIR__#$REPO_DIR#g" systemd/linkedin-connections.service > ~/.config/systemd/user/linkedin-connections.service
+cp systemd/linkedin-connections.timer ~/.config/systemd/user/
+
 systemctl --user daemon-reload
 systemctl --user enable --now linkedin-connections.timer
 loginctl enable-linger "$(whoami)"   # permite rodar mesmo sem sessao grafica ativa apos o boot

@@ -5,5 +5,7 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
-WorkingDirectory=%h/documents/my-projects/linkedin_connections
-ExecStart=%h/documents/my-projects/linkedin_connections/linkedin_conn.sh
+# O placeholder abaixo e substituido pelo diretorio real do repositorio
+# na instalacao (ver README, secao "Execucao diaria automatica").
+WorkingDirectory=__REPO_DIR__
+ExecStart=__REPO_DIR__/linkedin_conn.sh
