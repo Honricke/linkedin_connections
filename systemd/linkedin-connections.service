@@ -1,0 +1,9 @@
+[Unit]
+Description=LinkedIn Connections RPA (execucao diaria)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/documents/my-projects/linkedin_connections
+ExecStart=%h/documents/my-projects/linkedin_connections/linkedin_conn.sh

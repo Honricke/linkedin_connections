@@ -98,10 +98,40 @@ Os logs ficam em `LOG_DIR`, com nomes como `linkedin_connections_2026-07-11_10-3
 - Não há comando `linkedinbot`, agendador ou interface gráfica. A entrada disponível é `python main.py`; os testes unitários podem ser executados com `python -m unittest discover -v`.
 - A estrutura e os textos do LinkedIn podem mudar e afetar os seletores, a extração dos dados ou a confirmação do convite.
 
+## Execução diária automática (systemd timer)
+
+O bot pode ser agendado para rodar todo dia sem depender de cron. Diferente do cron puro, um systemd timer com `Persistent=true` recupera a execução perdida assim que o PC é ligado (mesmo que já tenha passado do horário), mas dispara **só uma vez** para o dia mais recente — não acumula uma execução por dia que ficou desligado.
+
+Como isso não é usado em notebook e desktop ao mesmo tempo (as duas máquinas rodam de forma independente, sem sincronizar entre si), o script `linkedin_conn.sh` guarda localmente a data da última execução (`~/.local/state/linkedin-connections/last_run_date`) e recusa rodar de novo no mesmo dia naquela máquina — evita tanto um "catch-up" duplicado do systemd quanto qualquer disparo repetido no mesmo dia.
+
+Arquivos de unit em `systemd/` (versionados, usam `%h` para o home do usuário — funcionam em qualquer máquina onde o repositório esteja em `~/documents/my-projects/linkedin_connections`):
+
+```bash
+mkdir -p ~/.config/systemd/user
+ln -sf ~/documents/my-projects/linkedin_connections/systemd/linkedin-connections.service ~/.config/systemd/user/
+ln -sf ~/documents/my-projects/linkedin_connections/systemd/linkedin-connections.timer ~/.config/systemd/user/
+systemctl --user daemon-reload
+systemctl --user enable --now linkedin-connections.timer
+loginctl enable-linger "$(whoami)"   # permite rodar mesmo sem sessao grafica ativa apos o boot
+```
+
+Comandos úteis:
+
+```bash
+systemctl --user list-timers linkedin-connections.timer   # proxima execucao agendada
+systemctl --user status linkedin-connections.service       # status/log da ultima execucao
+journalctl --user -u linkedin-connections.service -f       # acompanhar em tempo real
+systemctl --user disable --now linkedin-connections.timer  # desativar o agendamento
+```
+
+O horário é definido em `systemd/linkedin-connections.timer` (`OnCalendar`, padrão `11:00`); edite e rode `systemctl --user daemon-reload` para aplicar.
+
 ## Estrutura
 
 ```text
 main.py                 # Ponto de entrada e tratamento do ciclo de execução
+linkedin_conn.sh         # Wrapper de execucao diaria (trava de 1x/dia por maquina)
+systemd/                 # Unit files do timer/service para agendamento diario
 config/
 ├── constants.py        # URLs, rótulos e valores padrão
 └── settings.py         # Leitura de .env e variáveis de ambiente
