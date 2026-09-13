@@ -77,6 +77,20 @@ DAILY_CONNECTION_LIMIT=3 DRY_RUN=true python main.py
 
 O Chrome é iniciado com `--headless=new`, portanto não produz uma janela visível durante a automação.
 
+### Escolhendo a área de interesse (`TARGET_KEYWORDS`)
+
+O bot só envia convite para quem tem, na descrição/cargo exibido no card de sugestão, pelo menos uma das palavras-chave definidas em `TARGET_KEYWORDS` (no `.env`). Quem não bate em nenhuma é apenas pulado — não conta no limite diário, não vai para a planilha.
+
+- Formato: lista separada por vírgula, sem espaço extra necessário (`termo1,termo2,termo3`).
+- A comparação ignora maiúsculas/minúsculas e acentos, e é por substring (ex.: `react` bate em "Desenvolvedora React Native").
+- Padrão atual (definido em `config/constants.py` e replicado no `.env`/`.env.example`): recrutadores/RH (`recruiter`, `tech recruiter`, `talent acquisition`, `sourcer`, `headhunter`, `rh`, etc.) e as áreas técnicas Python/back-end, React/front-end e DevOps — lista completa nesses arquivos.
+- Para mudar o público-alvo, edite a variável `TARGET_KEYWORDS` no seu `.env` (não precisa mexer no código). Exemplo, focando só em recrutadores e Python:
+  ```bash
+  TARGET_KEYWORDS=recruiter,tech recruiter,talent acquisition,python,django,back-end,backend
+  ```
+- Para desativar o filtro e voltar a conectar com qualquer sugestão, deixe a variável vazia: `TARGET_KEYWORDS=`.
+- Teste uma lista nova sem enviar convites de verdade: `DRY_RUN=true python main.py` e acompanhe o log — perfis fora do filtro aparecem como "Fora do filtro de area".
+
 ## Saídas
 
 A planilha é criada no caminho de `OUTPUT_XLSX_PATH`, com a aba `conexoes` e as colunas:
