@@ -9,6 +9,7 @@ Automação em Python com Selenium para percorrer as sugestões de conexão do L
 - Abre o Chrome com um perfil persistente e conecta o Selenium por depuração remota.
 - Acessa `Minha rede` e a página de sugestões de conexões.
 - Localiza botões **Conectar**, envia o convite (sem nota quando o modal oferece essa opção) e confirma a mudança para **Pendente**.
+- Filtra as sugestões por área de interesse, comparando palavras-chave configuráveis com a descrição/cargo do card; quem não bate é apenas pulado (não conecta, não conta no limite, não vai para a planilha).
 - Extrai nome, descrição e URL do perfil a partir do card renderizado.
 - Aplica pausas aleatórias entre convites e uma pausa maior ao fim de cada lote.
 - Rola a lista em busca de novas sugestões; depois de 12 rolagens sem resultado, pode reiniciar o Chrome, reabrir as sugestões e continuar do ponto em que estava.
@@ -64,6 +65,7 @@ DAILY_CONNECTION_LIMIT=3 DRY_RUN=true python main.py
 | `BATCH_SIZE` | `10` | Quantidade de convites antes da pausa de lote. |
 | `MIN_BATCH_PAUSE_SECONDS` / `MAX_BATCH_PAUSE_SECONDS` | `30.0` / `60.0` | Intervalo aleatório da pausa de lote. |
 | `MAX_BROWSER_RESTARTS_WITHOUT_SUGGESTIONS` | `1` | Reinícios permitidos após esgotar as sugestões. |
+| `TARGET_KEYWORDS` | recrutadores (`recruiter`, `talent acquisition`, `sourcer`, `rh`...) + Python/back-end, React/front-end e DevOps (ver `.env.example`) | Lista separada por vírgula comparada (sem acento/caixa) com a descrição/cargo do card. Só conecta com quem bate em pelo menos uma palavra-chave. Vazio desativa o filtro. |
 | `CHROME_BINARY` | `/usr/bin/google-chrome` | Executável do Chrome. |
 | `CHROME_USER_DATA_DIR` | `~/.linkedin-selenium` | Diretório do perfil persistente. |
 | `CHROME_DEBUGGER_ADDRESS` | `127.0.0.1:9222` | Endereço usado para anexar o Selenium ao Chrome. |
